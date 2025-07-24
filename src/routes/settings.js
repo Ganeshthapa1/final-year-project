@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../utils/database');
+const { uploadSettingsPhoto } = require('../middleware/cloudinary');
 
 // GET /api/settings
 router.get('/', async (req, res) => {
@@ -8,7 +9,6 @@ router.get('/', async (req, res) => {
     const db = await getDb();
     const [rows] = await db.query('SELECT * FROM settings WHERE id = 1 LIMIT 1');
     if (rows.length === 0) {
-      // If no row exists, insert a default row
       await db.query(`INSERT INTO settings (id) VALUES (1)`);
       return res.json({});
     }
@@ -23,7 +23,18 @@ router.post('/', async (req, res) => {
   try {
     const db = await getDb();
     const settings = req.body;
-    // Upsert (insert or update) the singleton row
+    console.log('yes');
+    console.log(settings.photoUrl);
+    if( settings.photoUrl ){
+     
+      const uploadResult = await uploadSettingsPhoto( settings.photoUrl);
+       settings.photoUrl = uploadResult.secure_url;
+       console.log(uploadResult);
+    }
+    if(settings.photo1Url ){
+      const uploadResult = await uploadSettingsPhoto(settings.photo1Url);
+      settings.photo1Url = uploadResult.secure_url;
+      }
     await db.query(`REPLACE INTO settings (id, website_name, email, phone, address, district, about, photo_url, photo1_url, facebook_link, instagram_link, linkedin_link) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [1, settings.websiteName, settings.email, settings.phone, settings.address, settings.district, settings.about, settings.photoUrl, settings.photo1Url, settings.facebook, settings.instagram, settings.linkedin]
     );

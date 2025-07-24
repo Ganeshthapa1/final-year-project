@@ -15,4 +15,12 @@ async function uploadDoctorPhoto(fileBase64) {
   });
 }
 
-module.exports = { cloudinary, uploadDoctorPhoto };
+async function uploadSettingsPhoto(fileBase64) {
+  return cloudinary.uploader.upload(fileBase64, {
+    folder: 'settings',
+    resource_type: 'image',
+    overwrite: true,
+  });
+}
+
+module.exports = { cloudinary, uploadDoctorPhoto , uploadSettingsPhoto};

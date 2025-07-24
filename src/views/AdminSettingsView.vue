@@ -108,38 +108,48 @@ export default {
       this.form.linkedin = settingsStore.linkedin;
     });
   },
-  methods: {
-    onPhotoChange(e) {
-      const file = e.target.files[0];
-      if (file) {
-        this.form.photo = file;
-        this.form.photoUrl = URL.createObjectURL(file);
-      }
-    },
-    onPhoto1Change(e) {
-      const file = e.target.files[0];
-      if (file) {
-        this.form.photo1 = file;
-        this.form.photo1Url = URL.createObjectURL(file);
-      }
-    },
-    async saveSettings() {
-      const settingsStore = useSettingsStore();
-      settingsStore.setWebsiteName(this.form.websiteName);
-      settingsStore.setAddress(this.form.address);
-      settingsStore.setDistrict(this.form.district);
-      settingsStore.setPhone(this.form.phone);
-      settingsStore.setEmail(this.form.email);
-      settingsStore.setAbout(this.form.about);
-      settingsStore.setPhotoUrl(this.form.photoUrl);
-      settingsStore.setPhoto1Url(this.form.photo1Url);
-      settingsStore.setFacebook(this.form.facebook);
-      settingsStore.setInstagram(this.form.instagram);
-      settingsStore.setLinkedin(this.form.linkedin);
-      await settingsStore.saveSettingsToBackend();
-      window.dispatchEvent(new Event('settings-updated'));
+ methods: {
+  async onPhotoChange(e) {
+    const file = e.target.files[0];
+    if (file) {
+      this.form.photo = file;
+      this.form.photoUrl = await this.toBase64(file);
     }
+  },
+  async onPhoto1Change(e) {
+    const file = e.target.files[0];
+    if (file) {
+      this.form.photo1 = file;
+      this.form.photo1Url = await this.toBase64(file);
+    }
+  },
+  toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  },
+  async saveSettings() {
+    const settingsStore = useSettingsStore();
+    settingsStore.setWebsiteName(this.form.websiteName);
+    settingsStore.setAddress(this.form.address);
+    settingsStore.setDistrict(this.form.district);
+    settingsStore.setPhone(this.form.phone);
+    settingsStore.setEmail(this.form.email);
+    settingsStore.setAbout(this.form.about);
+    settingsStore.setPhotoUrl(this.form.photoUrl);     // ✅ now base64
+    settingsStore.setPhoto1Url(this.form.photo1Url);   // ✅ now base64
+    settingsStore.setFacebook(this.form.facebook);
+    settingsStore.setInstagram(this.form.instagram);
+    settingsStore.setLinkedin(this.form.linkedin);
+
+    await settingsStore.saveSettingsToBackend();
+    window.dispatchEvent(new Event('settings-updated'));
   }
+}
+
 }
 </script>
 
